@@ -2,8 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import { Invoice, Patient, ServiceMaster } from '@/types';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+// Vercel Serverless environment uses /tmp for writable storage
+const isVercel = process.env.VERCEL === '1';
+const DATA_DIR = isVercel ? path.join('/tmp', 'data') : path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+const ROOT_DB_FILE = path.join(process.cwd(), 'data', 'db.json');
 
 interface Schema {
   invoices: Invoice[];
@@ -11,6 +14,9 @@ interface Schema {
   services: ServiceMaster[];
   counter: number;
 }
+
+// In-memory fallback for edge or read-only environments
+let memoryDb: Schema | null = null;
 
 const INITIAL_SERVICES: ServiceMaster[] = [
   { id: '1', name: 'Home Healthcare Nursing Care', category: 'Nursing', defaultRate: 1200, defaultGst: 0, description: 'Per day, 12-hr shift' },
@@ -28,9 +34,9 @@ const INITIAL_SERVICES: ServiceMaster[] = [
 ];
 
 const INITIAL_PATIENTS: Patient[] = [
-  { id: 'p1', patId: 'KH-P-0231', name: 'Ramesh Kumar', age: '68', gender: 'Male', contact: '9845012345', address: '#42, 11th Cross, Malleshwaram, Bangalore', createdAt: new Date().toISOString() },
-  { id: 'p2', patId: 'KH-P-0232', name: 'Sunita Rao', age: '74', gender: 'Female', contact: '9731298765', address: '#108, 15th Cross, Rajajinagar, Bangalore', createdAt: new Date().toISOString() },
-  { id: 'p3', patId: 'KH-P-0233', name: 'Venkatesh Murthy', age: '61', gender: 'Male', contact: '8861054321', address: '#88, 5th Main, Sadashivanagar, Bangalore', createdAt: new Date().toISOString() }
+  { id: 'p1', patId: 'KH-P-0231', name: 'Ramesh Kumar', age: '68', gender: 'Male', contact: '9845012345', address: '#42, 11th Cross, Malleshwaram, Bengaluru', createdAt: new Date().toISOString() },
+  { id: 'p2', patId: 'KH-P-0232', name: 'Sunita Rao', age: '74', gender: 'Female', contact: '9731298765', address: '#108, 15th Cross, Rajajinagar, Bengaluru', createdAt: new Date().toISOString() },
+  { id: 'p3', patId: 'KH-P-0233', name: 'Venkatesh Murthy', age: '61', gender: 'Male', contact: '8861054321', address: '#88, 5th Main, Sadashivanagar, Bengaluru', createdAt: new Date().toISOString() }
 ];
 
 const INITIAL_INVOICES: Invoice[] = [
@@ -39,13 +45,13 @@ const INITIAL_INVOICES: Invoice[] = [
     invoiceNo: 'KH/2026/0001',
     invDate: '2026-08-20',
     paymentMode: 'UPI',
-    placeOfSupply: 'Bangalore, Karnataka',
+    placeOfSupply: 'Bengaluru, Karnataka',
     patId: 'KH-P-0231',
     patName: 'Ramesh Kumar',
     patAge: '68',
     patGender: 'Male',
     patContact: '9845012345',
-    patAddress: '#42, 11th Cross, Malleshwaram, Bangalore',
+    patAddress: '#42, 11th Cross, Malleshwaram, Bengaluru',
     doctor: 'Dr. Suresh V. Shetty',
     admDate: '2026-08-15',
     disDate: '2026-08-20',
@@ -60,71 +66,59 @@ const INITIAL_INVOICES: Invoice[] = [
     status: 'Paid',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'inv-1002',
-    invoiceNo: 'KH/2026/0002',
-    invDate: '2026-08-24',
-    paymentMode: 'Bank Transfer',
-    placeOfSupply: 'Bangalore, Karnataka',
-    patId: 'KH-P-0232',
-    patName: 'Sunita Rao',
-    patAge: '74',
-    patGender: 'Female',
-    patContact: '9731298765',
-    patAddress: '#108, 15th Cross, Rajajinagar, Bangalore',
-    doctor: 'Dr. Anita Deshmukh',
-    admDate: '2026-08-21',
-    disDate: '2026-08-24',
-    roomBed: 'Room 4',
-    items: [
-      { id: 'i3', service: 'Speciality Nursing Care Services', description: '24-hr ICU trained nurse', qty: 3, rate: 1800, disc: 5, gst: 0 },
-      { id: 'i4', service: 'BiPAP Machine Rental', description: 'Dual pressure unit with humidifier', qty: 3, rate: 750, disc: 0, gst: 12 }
-    ],
-    taxType: 'intra',
-    extraDiscount: 200,
-    notes: 'Thank you for choosing Kaashvi Healthcare.',
-    status: 'Pending',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
   }
 ];
 
+function getDefaultSchema(): Schema {
+  if (fs.existsSync(ROOT_DB_FILE)) {
+    try {
+      const raw = fs.readFileSync(ROOT_DB_FILE, 'utf-8');
+      return JSON.parse(raw);
+    } catch (e) {
+      // fallback
+    }
+  }
+  return {
+    invoices: INITIAL_INVOICES,
+    patients: INITIAL_PATIENTS,
+    services: INITIAL_SERVICES,
+    counter: 2
+  };
+}
+
 function ensureDb(): Schema {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(DB_FILE)) {
-    const initial: Schema = {
-      invoices: INITIAL_INVOICES,
-      patients: INITIAL_PATIENTS,
-      services: INITIAL_SERVICES,
-      counter: 2
-    };
-    fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), 'utf-8');
-    return initial;
-  }
+  if (memoryDb) return memoryDb;
+
   try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(DB_FILE)) {
+      const initial = getDefaultSchema();
+      fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), 'utf-8');
+      memoryDb = initial;
+      return initial;
+    }
     const content = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(content);
+    memoryDb = JSON.parse(content);
+    return memoryDb!;
   } catch (err) {
-    console.error('Error reading db.json, re-initializing', err);
-    const initial: Schema = {
-      invoices: INITIAL_INVOICES,
-      patients: INITIAL_PATIENTS,
-      services: INITIAL_SERVICES,
-      counter: 2
-    };
-    fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), 'utf-8');
-    return initial;
+    console.error('File DB write failed, using memory DB', err);
+    if (!memoryDb) memoryDb = getDefaultSchema();
+    return memoryDb;
   }
 }
 
 function saveDb(data: Schema): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  memoryDb = data;
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Could not persist to file (Vercel serverless environment), kept in memory', err);
   }
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
 }
 
 export function getInvoices(): Invoice[] {
@@ -165,7 +159,7 @@ export function saveInvoice(data: Partial<Invoice>): Invoice {
     invoiceNo,
     invDate: data.invDate || new Date().toISOString().split('T')[0],
     paymentMode: data.paymentMode || 'Cash',
-    placeOfSupply: data.placeOfSupply || 'Bangalore, Karnataka',
+    placeOfSupply: data.placeOfSupply || 'Bengaluru, Karnataka',
     patId: data.patId || '',
     patName: data.patName || '',
     patAge: data.patAge || '',
@@ -179,7 +173,7 @@ export function saveInvoice(data: Partial<Invoice>): Invoice {
     items: data.items || [],
     taxType: data.taxType || 'intra',
     extraDiscount: data.extraDiscount || 0,
-    notes: data.notes || 'Thank you for choosing Kaashvi Healthcare. Get well soon.',
+    notes: data.notes || 'Thank you for choosing For Healthcare. Get well soon.',
     status: data.status || 'Pending',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
