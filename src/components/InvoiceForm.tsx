@@ -226,7 +226,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
             <h2><span className="num">1</span>Invoice Details</h2>
             <div className="field">
               <label>Invoice No.</label>
-              <input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} className="mono" readOnly />
+              <input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} className="mono" placeholder="e.g. KH/2026/0001" />
             </div>
             <div className="field-row grid grid-cols-2 gap-3">
               <div className="field">
