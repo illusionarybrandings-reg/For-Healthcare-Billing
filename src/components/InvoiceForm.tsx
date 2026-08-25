@@ -29,6 +29,7 @@ interface InvoiceFormProps {
 }
 
 export default function InvoiceForm({ initialData, onSave, isEditing = false }: InvoiceFormProps) {
+  // Empty by default for new invoices as requested
   const [invoiceNo, setInvoiceNo] = useState(initialData?.invoiceNo || '');
   const [invDate, setInvDate] = useState(initialData?.invDate || new Date().toISOString().split('T')[0]);
   const [paymentMode, setPaymentMode] = useState(initialData?.paymentMode || 'Cash');
@@ -69,9 +70,9 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Auto fetch next invoice number if empty
+  // Fetch catalogs on mount
   useEffect(() => {
-    async function initDefaults() {
+    async function loadCatalog() {
       try {
         const [resSvc, resPat] = await Promise.all([
           fetch('/api/services').then(r => r.json()),
@@ -79,21 +80,12 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
         ]);
         if (resSvc.success) setServicesCatalog(resSvc.data);
         if (resPat.success) setPatientsCatalog(resPat.data);
-
-        if (!invoiceNo && !isEditing) {
-          const resInv = await fetch('/api/invoices').then(r => r.json());
-          if (resInv.success) {
-            const count = (resInv.data?.length || 0) + 1;
-            const year = new Date().getFullYear();
-            setInvoiceNo(`KH/${year}/${String(count).padStart(4, '0')}`);
-          }
-        }
       } catch (err) {
-        console.error('Failed initializing defaults', err);
+        console.error('Failed loading catalogs', err);
       }
     }
-    initDefaults();
-  }, [invoiceNo, isEditing]);
+    loadCatalog();
+  }, []);
 
   const totals = computeInvoiceTotals(items, taxType, extraDiscount);
 
@@ -132,6 +124,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
 
   const handleClearForm = () => {
     if (!confirm('Clear all fields and start a new invoice?')) return;
+    setInvoiceNo('');
     setPatId('');
     setPatName('');
     setPatAge('');
@@ -142,7 +135,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
     setDisDate('');
     setRoomBed('');
     setExtraDiscount(0);
-    setNotes('Thank you for choosing Kaashvi Healthcare. Get well soon.');
+    setNotes('Thank you for choosing For Healthcare. Get well soon.');
     setTaxType('intra');
     setItems([]);
   };
@@ -160,7 +153,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
 
     setLoading(true);
     const payload: Partial<Invoice> = {
-      invoiceNo: invoiceNo || `KH/${new Date().getFullYear()}/0001`,
+      invoiceNo,
       invDate,
       paymentMode,
       placeOfSupply,
@@ -190,7 +183,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
 
   const draftInvoiceObject: Invoice = {
     id: initialData?.id || 'preview-id',
-    invoiceNo: invoiceNo || 'KH/2026/0001',
+    invoiceNo: invoiceNo || '-',
     invDate,
     paymentMode,
     placeOfSupply,
@@ -214,21 +207,27 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
   };
 
   return (
-    <div className="max-w-[1180px] mx-auto space-y-4">
+    <div className="max-w-[1180px] mx-auto space-y-4 px-2 sm:px-4">
       
       <form onSubmit={(e) => handleSubmit(e, 'Pending')}>
         
         {/* ===== Panel 1 & 2 Grid ===== */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           
           {/* Panel 1: Invoice Details */}
           <div className="panel">
             <h2><span className="num">1</span>Invoice Details</h2>
             <div className="field">
               <label>Invoice No.</label>
-              <input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} className="mono" placeholder="e.g. KH/2026/0001" />
+              <input
+                type="text"
+                value={invoiceNo}
+                onChange={(e) => setInvoiceNo(e.target.value)}
+                className="mono"
+                placeholder="Enter Invoice No..."
+              />
             </div>
-            <div className="field-row grid grid-cols-2 gap-3">
+            <div className="field-row grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="field">
                 <label>Invoice Date</label>
                 <input type="date" value={invDate} onChange={(e) => setInvDate(e.target.value)} />
@@ -254,7 +253,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
           {/* Panel 2: Patient Details */}
           <div className="panel">
             <h2><span className="num">2</span>Patient Details</h2>
-            <div className="field-row grid grid-cols-2 gap-3">
+            <div className="field-row grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="field">
                 <label>Patient ID</label>
                 <input value={patId} onChange={(e) => setPatId(e.target.value)} placeholder="e.g. KH-P-0231" />
@@ -264,7 +263,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
                 <input value={patName} onChange={(e) => setPatName(e.target.value)} placeholder="Full name" required />
               </div>
             </div>
-            <div className="field-row grid grid-cols-2 gap-3">
+            <div className="field-row grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="field">
                 <label>Age</label>
                 <input value={patAge} onChange={(e) => setPatAge(e.target.value)} placeholder="e.g. 68" />
@@ -278,7 +277,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
                 </select>
               </div>
             </div>
-            <div className="field-row grid grid-cols-2 gap-3">
+            <div className="field-row grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="field">
                 <label>Contact No.</label>
                 <input value={patContact} onChange={(e) => setPatContact(e.target.value)} placeholder="10-digit mobile" />
@@ -295,7 +294,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
         {/* ===== Panel 3: Care Details ===== */}
         <div className="panel">
           <h2><span className="num">3</span>Care Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="field">
               <label>Attending Doctor</label>
               <input value={doctor} onChange={(e) => setDoctor(e.target.value)} placeholder="Dr. name" />
@@ -309,7 +308,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
               <input type="date" value={disDate} onChange={(e) => setDisDate(e.target.value)} />
             </div>
           </div>
-          <div className="field mt-3" style={{ maxWidth: '280px' }}>
+          <div className="field mt-3 max-w-full sm:max-w-xs">
             <label>Room / Bed No.</label>
             <input value={roomBed} onChange={(e) => setRoomBed(e.target.value)} placeholder="e.g. Room 4 / Bed B" />
           </div>
@@ -317,13 +316,13 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
 
         {/* ===== Panel 4: Services Table ===== */}
         <div className="panel">
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <h2 style={{ margin: 0 }}><span className="num">4</span>Services Rendered</h2>
-            <span className="text-[11.5px] text-slate-400">Nursing/home-care usually GST 0% · rented/sold equipment usually taxable</span>
+            <span className="text-[11px] sm:text-[11.5px] text-slate-400">Nursing/home-care usually GST 0% · rented/sold equipment usually taxable</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="svc">
+          <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+            <table className="svc min-w-[700px] sm:min-w-full">
               <thead>
                 <tr>
                   <th style={{ width: '24%' }}>Service</th>
@@ -438,7 +437,7 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
           {/* Tax Type */}
           <div className="panel">
             <h2><span className="num">5</span>Tax Type</h2>
-            <div className="flex flex-col gap-2 font-medium text-xs">
+            <div className="flex flex-col gap-2.5 font-medium text-xs">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
@@ -526,36 +525,38 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
 
         </div>
 
-        {/* Sticky Action Bar */}
-        <div className="action-bar">
-          <button type="button" className="btn btn-ghost" onClick={handleClearForm}>
+        {/* Sticky Action Bar - Fully Responsive */}
+        <div className="action-bar flex-col sm:flex-row gap-2.5 sm:gap-3">
+          <button type="button" className="btn btn-ghost w-full sm:w-auto" onClick={handleClearForm}>
             New / Clear Form
           </button>
           
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={() => setShowPreviewModal(true)}
-          >
-            Preview Sheet
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              className="btn btn-outline flex-1 sm:flex-none"
+              onClick={() => setShowPreviewModal(true)}
+            >
+              Preview Sheet
+            </button>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary"
-          >
-            {loading ? 'Saving...' : 'Preview, Print & Save Invoice'}
-          </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary flex-1 sm:flex-none"
+            >
+              {loading ? 'Saving...' : 'Preview, Print & Save Invoice'}
+            </button>
+          </div>
         </div>
 
       </form>
 
-      {/* Preview Modal Overlay */}
+      {/* Preview Modal Overlay - Responsive */}
       {showPreviewModal && (
-        <div className="fixed inset-0 z-50 bg-[#0a1423]/60 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-4xl w-full my-8 shadow-2xl overflow-hidden border border-slate-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <div className="fixed inset-0 z-50 bg-[#0a1423]/60 backdrop-blur-sm flex items-start justify-center p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-4xl w-full my-4 sm:my-8 shadow-2xl overflow-hidden border border-slate-200">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-slate-200 bg-slate-50">
               <strong className="font-extrabold text-slate-900 text-sm font-sans">Invoice Preview</strong>
               <button
                 onClick={() => setShowPreviewModal(false)}
@@ -565,11 +566,11 @@ export default function InvoiceForm({ initialData, onSave, isEditing = false }: 
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto max-h-[80vh]">
+            <div className="p-2 sm:p-6 overflow-y-auto max-h-[80vh]">
               <InvoiceSheet invoice={draftInvoiceObject} />
             </div>
 
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50">
+            <div className="flex justify-end gap-2.5 px-4 sm:px-6 py-3.5 border-t border-slate-200 bg-slate-50">
               <button
                 onClick={() => setShowPreviewModal(false)}
                 className="btn btn-outline"
