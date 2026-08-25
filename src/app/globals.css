@@ -44,6 +44,13 @@ body {
   margin-bottom: 18px;
 }
 
+@media (max-width: 640px) {
+  .panel {
+    padding: 16px 14px;
+    margin-bottom: 14px;
+  }
+}
+
 .panel h2 {
   font-family: 'Manrope', sans-serif;
   font-size: 13px;
@@ -223,14 +230,63 @@ table.svc td.del { width: 34px; text-align: center; }
   z-index: 30;
 }
 
+/* ===== STRICT SINGLE-PAGE PRINT RULES ===== */
 @media print {
-  body * { visibility: hidden; }
-  .no-print { display: none !important; }
-  #printableInvoiceArea, #printableInvoiceArea * { visibility: visible; }
+  html, body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Completely remove all web interface chrome from print layout flow */
+  header, footer, nav, .no-print, form, .panel, .action-bar, .modal-backdrop {
+    display: none !important;
+  }
+
+  /* Reset main container layout */
+  body > main,
+  body > main > *,
+  body > main > div,
+  body > main > div > div {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  /* Position printable sheet at top of 1 single page */
   #printableInvoiceArea {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    padding: 0;
+    display: block !important;
+    visibility: visible !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    page-break-before: avoid !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #printableInvoiceArea * {
+    visibility: visible !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 6mm 8mm;
   }
 }

@@ -13,26 +13,26 @@ export default function InvoiceSheet({ invoice }: InvoiceSheetProps) {
 
   return (
     <div className="w-full overflow-x-auto">
-      <div id="printableInvoiceArea" className="printable-sheet min-w-[320px] max-w-4xl mx-auto p-4 sm:p-10 bg-white rounded-xl shadow-lg border border-slate-200">
+      <div id="printableInvoiceArea" className="printable-sheet min-w-[320px] max-w-4xl mx-auto p-4 sm:p-8 bg-white rounded-xl shadow-lg border border-slate-200">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-          <div className="flex items-center gap-3.5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+          <div className="flex items-center gap-3">
             <img 
               src="/LOGO FOR.svg" 
               alt="For Healthcare Logo" 
-              className="h-12 sm:h-16 w-auto object-contain flex-none"
+              className="h-12 sm:h-14 w-auto object-contain flex-none"
             />
             <div>
-              <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-wide font-sans">FOR HEALTHCARE</h1>
-              <p className="text-[10.5px] sm:text-xs font-bold text-emerald-600 tracking-wider uppercase">Care · Compassion · Trust</p>
-              <p className="text-[10.5px] sm:text-xs text-slate-600 mt-1 font-medium">3rd, SUKRITHI # 1043, 2nd cross, main, BTM 4th Stage, Bilekahalli, Bengaluru, Karnataka 560076</p>
-              <p className="text-[10.5px] sm:text-xs text-slate-600">+91 81975 26597 | +91 99640 05780 &nbsp;|&nbsp; forhealthcare.forlife@gmail.com</p>
+              <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-wide font-sans">FOR HEALTHCARE</h1>
+              <p className="text-[10px] sm:text-[11px] font-bold text-emerald-600 tracking-wider uppercase">Care · Compassion · Trust</p>
+              <p className="text-[10px] sm:text-[11px] text-slate-600 mt-0.5 font-medium">3rd, SUKRITHI # 1043, 2nd cross, main, BTM 4th Stage, Bilekahalli, Bengaluru, Karnataka 560076</p>
+              <p className="text-[10px] sm:text-[11px] text-slate-600">+91 81975 26597 | +91 99640 05780 &nbsp;|&nbsp; forhealthcare.forlife@gmail.com</p>
             </div>
           </div>
 
           <div className="sm:text-right self-end sm:self-auto">
-            <span className={`inline-block px-3 py-1 text-[11px] sm:text-xs font-extrabold uppercase rounded-full tracking-wider ${
+            <span className={`inline-block px-2.5 py-0.5 text-[10px] sm:text-[11px] font-extrabold uppercase rounded-full tracking-wider ${
               invoice.status === 'Paid' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
               invoice.status === 'Pending' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
               'bg-slate-100 text-slate-700 border border-slate-300'
@@ -43,14 +43,14 @@ export default function InvoiceSheet({ invoice }: InvoiceSheetProps) {
         </div>
 
         {/* Invoice Banner */}
-        <div className="bg-[#0b3d66] text-white font-extrabold text-center tracking-[3px] text-xs sm:text-sm py-2 rounded-md my-4 uppercase">
+        <div className="bg-[#0b3d66] text-white font-extrabold text-center tracking-[3px] text-xs py-1.5 rounded-md my-3 uppercase">
           INVOICE / BILL
         </div>
 
         {/* Details Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 text-xs text-slate-800 my-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs text-slate-800 my-3">
           {/* Left Column */}
-          <div className="space-y-1.5 sm:border-r sm:border-slate-100 sm:pr-4">
+          <div className="space-y-1 sm:border-r sm:border-slate-100 sm:pr-3">
             <div className="flex justify-between border-b border-dashed border-slate-200 py-0.5">
               <span className="text-slate-500 font-medium">Invoice No.</span>
               <span className="font-bold mono">{invoice.invoiceNo}</span>
@@ -78,7 +78,7 @@ export default function InvoiceSheet({ invoice }: InvoiceSheetProps) {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-1.5 sm:pl-2">
+          <div className="space-y-1 sm:pl-1">
             <div className="flex justify-between border-b border-dashed border-slate-200 py-0.5">
               <span className="text-slate-500 font-medium">Patient ID</span>
               <span className="font-semibold mono">{invoice.patId || '-'}</span>
@@ -111,18 +111,18 @@ export default function InvoiceSheet({ invoice }: InvoiceSheetProps) {
         </div>
 
         {/* Services Table */}
-        <div className="overflow-x-auto mt-6">
+        <div className="overflow-x-auto mt-4">
           <table className="w-full text-xs border-collapse min-w-[600px] sm:min-w-full">
             <thead>
               <tr className="bg-[#0b3d66] text-white font-bold uppercase tracking-wider">
-                <th className="py-2 px-2 text-center w-8">#</th>
-                <th className="py-2 px-3 text-left">Service</th>
-                <th className="py-2 px-3 text-left">Description</th>
-                <th className="py-2 px-2 text-center w-12">Qty</th>
-                <th className="py-2 px-3 text-right">Rate (₹)</th>
-                <th className="py-2 px-2 text-center w-14">Disc %</th>
-                <th className="py-2 px-2 text-center w-14">GST %</th>
-                <th className="py-2 px-3 text-right">Amount (₹)</th>
+                <th className="py-1.5 px-2 text-center w-8">#</th>
+                <th className="py-1.5 px-3 text-left">Service</th>
+                <th className="py-1.5 px-3 text-left">Description</th>
+                <th className="py-1.5 px-2 text-center w-12">Qty</th>
+                <th className="py-1.5 px-3 text-right">Rate (₹)</th>
+                <th className="py-1.5 px-2 text-center w-14">Disc %</th>
+                <th className="py-1.5 px-2 text-center w-14">GST %</th>
+                <th className="py-1.5 px-3 text-right">Amount (₹)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -139,14 +139,14 @@ export default function InvoiceSheet({ invoice }: InvoiceSheetProps) {
 
                 return (
                   <tr key={idx} className="hover:bg-slate-50">
-                    <td className="py-2 px-2 text-center text-slate-500 font-medium">{idx + 1}</td>
-                    <td className="py-2 px-3 font-semibold text-slate-900">{it.service}</td>
-                    <td className="py-2 px-3 text-slate-600">{it.description || '-'}</td>
-                    <td className="py-2 px-2 text-center font-medium">{qty}</td>
-                    <td className="py-2 px-3 text-right mono">{rate.toFixed(2)}</td>
-                    <td className="py-2 px-2 text-center">{disc}%</td>
-                    <td className="py-2 px-2 text-center">{gst}%</td>
-                    <td className="py-2 px-3 text-right font-bold text-slate-900 mono">{total.toFixed(2)}</td>
+                    <td className="py-1.5 px-2 text-center text-slate-500 font-medium">{idx + 1}</td>
+                    <td className="py-1.5 px-3 font-semibold text-slate-900">{it.service}</td>
+                    <td className="py-1.5 px-3 text-slate-600">{it.description || '-'}</td>
+                    <td className="py-1.5 px-2 text-center font-medium">{qty}</td>
+                    <td className="py-1.5 px-3 text-right mono">{rate.toFixed(2)}</td>
+                    <td className="py-1.5 px-2 text-center">{disc}%</td>
+                    <td className="py-1.5 px-2 text-center">{gst}%</td>
+                    <td className="py-1.5 px-3 text-right font-bold text-slate-900 mono">{total.toFixed(2)}</td>
                   </tr>
                 );
               })}
@@ -155,52 +155,52 @@ export default function InvoiceSheet({ invoice }: InvoiceSheetProps) {
         </div>
 
         {/* Totals Table */}
-        <div className="flex justify-end mt-4">
-          <table className="w-64 text-xs">
-            <tbody className="space-y-1">
+        <div className="flex justify-end mt-3">
+          <table className="w-60 text-xs">
+            <tbody className="space-y-0.5">
               <tr>
-                <td className="py-1 text-slate-600">Subtotal</td>
-                <td className="py-1 text-right font-medium mono">₹ {totals.subtotal.toFixed(2)}</td>
+                <td className="py-0.5 text-slate-600">Subtotal</td>
+                <td className="py-0.5 text-right font-medium mono">₹ {totals.subtotal.toFixed(2)}</td>
               </tr>
               <tr>
-                <td className="py-1 text-slate-600">Item Discount</td>
-                <td className="py-1 text-right text-emerald-600 font-medium mono">-₹ {totals.discount.toFixed(2)}</td>
+                <td className="py-0.5 text-slate-600">Item Discount</td>
+                <td className="py-0.5 text-right text-emerald-600 font-medium mono">-₹ {totals.discount.toFixed(2)}</td>
               </tr>
               <tr>
-                <td className="py-1 text-slate-600">Taxable Value</td>
-                <td className="py-1 text-right font-medium mono">₹ {totals.taxable.toFixed(2)}</td>
+                <td className="py-0.5 text-slate-600">Taxable Value</td>
+                <td className="py-0.5 text-right font-medium mono">₹ {totals.taxable.toFixed(2)}</td>
               </tr>
               {totals.taxType === 'intra' && (
                 <>
                   <tr>
-                    <td className="py-1 text-slate-600">CGST</td>
-                    <td className="py-1 text-right font-medium mono">₹ {totals.cgst.toFixed(2)}</td>
+                    <td className="py-0.5 text-slate-600">CGST</td>
+                    <td className="py-0.5 text-right font-medium mono">₹ {totals.cgst.toFixed(2)}</td>
                   </tr>
                   <tr>
-                    <td className="py-1 text-slate-600">SGST</td>
-                    <td className="py-1 text-right font-medium mono">₹ {totals.sgst.toFixed(2)}</td>
+                    <td className="py-0.5 text-slate-600">SGST</td>
+                    <td className="py-0.5 text-right font-medium mono">₹ {totals.sgst.toFixed(2)}</td>
                   </tr>
                 </>
               )}
               {totals.taxType === 'inter' && (
                 <tr>
-                  <td className="py-1 text-slate-600">IGST</td>
-                  <td className="py-1 text-right font-medium mono">₹ {totals.igst.toFixed(2)}</td>
+                  <td className="py-0.5 text-slate-600">IGST</td>
+                  <td className="py-0.5 text-right font-medium mono">₹ {totals.igst.toFixed(2)}</td>
                 </tr>
               )}
               {totals.extraDiscount > 0 && (
                 <tr>
-                  <td className="py-1 text-slate-600">Additional Flat Discount</td>
-                  <td className="py-1 text-right text-emerald-600 font-medium mono">-₹ {totals.extraDiscount.toFixed(2)}</td>
+                  <td className="py-0.5 text-slate-600">Additional Flat Discount</td>
+                  <td className="py-0.5 text-right text-emerald-600 font-medium mono">-₹ {totals.extraDiscount.toFixed(2)}</td>
                 </tr>
               )}
               <tr>
-                <td className="py-1 text-slate-600">Round Off</td>
-                <td className="py-1 text-right font-medium mono">₹ {totals.roundOff.toFixed(2)}</td>
+                <td className="py-0.5 text-slate-600">Round Off</td>
+                <td className="py-0.5 text-right font-medium mono">₹ {totals.roundOff.toFixed(2)}</td>
               </tr>
               <tr className="border-t-2 border-[#0b3d66]">
-                <td className="py-2 font-bold text-sm text-[#0b3d66]">Total Payable</td>
-                <td className="py-2 text-right font-extrabold text-sm text-[#0b3d66] mono">
+                <td className="py-1 font-bold text-sm text-[#0b3d66]">Total Payable</td>
+                <td className="py-1 text-right font-extrabold text-sm text-[#0b3d66] mono">
                   ₹ {totals.finalPayable.toLocaleString('en-IN')}
                 </td>
               </tr>
@@ -209,20 +209,20 @@ export default function InvoiceSheet({ invoice }: InvoiceSheetProps) {
         </div>
 
         {/* Amount in Words */}
-        <div className="mt-4 bg-emerald-50 border-l-4 border-emerald-600 p-3 rounded-r-md text-xs">
+        <div className="mt-3 bg-emerald-50 border-l-4 border-emerald-600 p-2.5 rounded-r-md text-xs">
           <span className="text-slate-600">Amount in Words: </span>
           <strong className="text-slate-900 font-bold">{numberToWords(totals.finalPayable)}</strong>
         </div>
 
         {/* Notes */}
         {invoice.notes && (
-          <div className="mt-3 text-[11px] text-slate-600 italic">
+          <div className="mt-2 text-[10.5px] text-slate-600 italic">
             {invoice.notes}
           </div>
         )}
 
         {/* Signatures */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 sm:gap-0 mt-12 sm:mt-16 pt-4 text-xs text-slate-700">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 sm:gap-0 mt-8 sm:mt-10 pt-2 text-xs text-slate-700">
           <div className="text-center w-full sm:w-auto">
             <div className="w-48 border-t border-slate-400 mx-auto mb-1"></div>
             <span>Patient / Attendant Signature</span>
@@ -236,7 +236,7 @@ export default function InvoiceSheet({ invoice }: InvoiceSheetProps) {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-[9.5px] text-slate-400 mt-8 pt-4 border-t border-slate-100">
+        <div className="text-center text-[9px] text-slate-400 mt-5 pt-2 border-t border-slate-100">
           This is a computer-generated invoice. No physical signature required.
         </div>
       </div>
